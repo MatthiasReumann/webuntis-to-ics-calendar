@@ -11,6 +11,7 @@ class Subject:
 
 def createTimetable(session):
     """Return timetable object of webuntis api"""
+    
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday())
     friday = monday + datetime.timedelta(days=4)
@@ -21,6 +22,7 @@ def createTimetable(session):
 
 def createSubjectList(session):
     """Return Calendar object with events from webuntis"""
+    
     subjectList = []
     
     calendar = Calendar() #create new calender (todo: add to existing one)
@@ -32,16 +34,20 @@ def createSubjectList(session):
         start = timetable[i].start
         end = timetable[i].end
         
-        createEvent(subject, start, end, calendar)
+        event = createEvent(subject, start, end)
+        calendar.events.add(event)
 
     return calendar
 
-def createEvent(subject, start, end, calendar):
+def createEvent(subject, start, end):
+    """Return Event object"""
+    
     event = Event()
     event.name = str(subject)
     event.begin = start
     event.end = end
-    calendar.events.add(event)
+    
+    return event
 
 def createICSFile(calendar):
     with open('webuntis.ics', 'w') as f:
