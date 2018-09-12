@@ -76,7 +76,7 @@ def validateArguments():
 
 
 def usage():
-    print("usage: server username password school class")
+    print("usage: webunits.py server username password school class")
 
 def main():
     validateArguments();
