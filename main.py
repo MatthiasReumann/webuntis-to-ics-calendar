@@ -16,7 +16,7 @@ def createTimetable(session):
     monday = today - datetime.timedelta(days=today.weekday())
     friday = monday + datetime.timedelta(days=4)
 
-    schoolClass = session.klassen().filter(name="4CHIF")[0]; #issue: adds lessons that i dont have (bc of '4CHIF')
+    schoolClass = session.klassen().filter(name=sys.argv[5])[0]; #issue: adds lessons that i dont have
     
     return session.timetable(klasse=schoolClass, start=monday, end=friday); #get timetable of class 4CHIF
 
@@ -53,34 +53,32 @@ def createICSFile(calendar):
     with open('webuntis.ics', 'w') as f:
         f.writelines(calendar)
 
-def createSession(server, username, password, school):
+def createSession():
     session = wu.Session(
-        server = server,
-        username = username,
-        password = password,
-        school = school,
+        server = sys.argv[1],
+        username = sys.argv[2],
+        password = sys.argv[3],
+        school = sys.argv[4],
         useragent = 'webuntis-calender-sync'
     )
     
     session.login()
     
-    createICSFile(createSubjectList(session))
+    createICSFile(createSubjectList(session));
     
     session.logout()
 
 def validateArguments():
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 6 or sys.argv[1] == "-help":
         usage()
-
-
+    else:
+        createSession()
 
 
 def usage():
     print("usage")
 
-
 def main():
     validateArguments();
-    createSession(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]);
 
 main()
