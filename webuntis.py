@@ -69,14 +69,14 @@ def createSession():
     session.logout()
 
 def validateArguments():
-    if len(sys.argv) != 6 or sys.argv[1] == "-help":
+    if len(sys.argv) != 6 or sys.argv == "-help" or len(sys.argv) == 1:
         usage()
     else:
         createSession()
 
 
 def usage():
-    print("usage")
+    print("usage: server username password school class")
 
 def main():
     validateArguments();
