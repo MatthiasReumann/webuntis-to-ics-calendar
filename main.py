@@ -9,7 +9,7 @@ class Subject:
         self.start = start
         self.end = end
 
-def createTimetable(session):
+def getTimetable(session):
     """Return timetable object of webuntis api"""
     
     today = datetime.date.today()
@@ -20,14 +20,14 @@ def createTimetable(session):
     
     return session.timetable(klasse=schoolClass, start=monday, end=friday); #get timetable of class 4CHIF
 
-def createSubjectList(session):
+def getCalendar(session):
     """Return Calendar object with events from webuntis"""
     
     subjectList = []
     
     calendar = Calendar() #create new calender (todo: add to existing one)
     
-    timetable = createTimetable(session)
+    timetable = getTimetable(session)
     
     for i in range(len(timetable)):
         subject = timetable[i].subjects[0]
@@ -59,12 +59,12 @@ def createSession():
         username = sys.argv[2],
         password = sys.argv[3],
         school = sys.argv[4],
-        useragent = 'webuntis-calender-sync'
+        useragent = 'webuntis-calender-sync' #cant delete that
     )
     
     session.login()
     
-    createICSFile(createSubjectList(session));
+    createICSFile(getCalendar(session));
     
     session.logout()
 
