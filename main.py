@@ -1,6 +1,7 @@
 from ics import Calendar, Event
 import webuntis as wu
 import datetime
+import sys
 
 class Subject:
     def __init__(self, name, start, end):
@@ -8,19 +9,23 @@ class Subject:
         self.start = start
         self.end = end
 
-def buildSubjectList(session):
-    subjectList = []
-    
+def createTimetable(session):
+    """Return timetable object of webuntis api"""
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday())
     friday = monday + datetime.timedelta(days=4)
+
+    schoolClass = session.klassen().filter(name="4CHIF")[0]; #issue: adds lessons that i dont have (bc of '4CHIF')
     
-    myClass = session.klassen().filter(name="4CHIF")[0]; #issue: adds lessons that i dont have (bc of '4CHIF')
-    
-    subj = session.subjects();
-    timetable = session.timetable(klasse=myClass, start=monday, end=friday); #get timetable of class 4CHIF
+    return session.timetable(klasse=schoolClass, start=monday, end=friday); #get timetable of class 4CHIF
+
+def createSubjectList(session):
+    """Return Calendar object with events from webuntis"""
+    subjectList = []
     
     calendar = Calendar() #create new calender (todo: add to existing one)
+    
+    timetable = createTimetable(session)
     
     for i in range(len(timetable)):
         subject = timetable[i].subjects[0]
@@ -42,23 +47,34 @@ def createICSFile(calendar):
     with open('webuntis.ics', 'w') as f:
         f.writelines(calendar)
 
-
-def createSession():
+def createSession(server, username, password, school):
     session = wu.Session(
-                   server= 'nete.webuntis.com',
-                   username = 'reumann.matthias',
-                   password = 'test',
-                   school = 'htlwrn',
-                   useragent = 'webuntis-calender-sync'
+        server = server,
+        username = username,
+        password = password,
+        school = school,
+        useragent = 'webuntis-calender-sync'
     )
     
     session.login()
     
-    createICSFile(buildSubjectList(session))
+    createICSFile(createSubjectList(session))
     
     session.logout()
 
+def validateArguments():
+    if len(sys.argv) != 6:
+        usage()
+
+
+
+
+def usage():
+    print("usage")
+
+
 def main():
-    createSession();
+    validateArguments();
+    createSession(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]);
 
 main()
