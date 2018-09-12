@@ -79,6 +79,6 @@ def usage():
     print("usage: webunits.py server username password school class")
 
 def main():
-    validateArguments();
+    createSession()
 
 main()
