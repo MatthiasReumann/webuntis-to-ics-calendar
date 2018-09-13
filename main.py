@@ -2,12 +2,22 @@ from ics import Calendar, Event
 import webuntis as wu
 import datetime
 import sys
+import toml
 
 class Subject:
     def __init__(self, name, start, end):
         self.name = name
         self.start = start
         self.end = end
+
+class Config:
+    def __init__(self, server, username, password, schoolclass, school):
+        self.server = server
+        self.username = username
+        self.password = password
+        self.schoolclass = schoolclass
+        self.school = school
+
 
 def getFirstDay():
     """Return current monday"""
@@ -84,37 +94,44 @@ def createICSFile(calendar, filename):
     with open(filename, 'w') as f:
         f.writelines(calendar)
 
-def getSession(args):
+def readTOMLFile(filename):
+    toml_string = ""
+    with open(filename, 'r') as f:
+        toml_string = toml_string + f.read()
+
+    parsed_toml = toml.loads(toml_string)
+    user = parsed_toml["user"]
+    return Config(user["server"],user["username"],user["password"],
+                  user["class"],user["school"])
+
+def getSession(config):
     """Return Session object"""
     
     session = wu.Session(
-        server = args[1],
-        username = args[2],
-        password = args[3],
-        school = args[4],
+        server = config.server,
+        username = config.username,
+        password = config.password,
+        school = config.school,
         useragent = 'webuntis-calender-sync'
     )
     
     return session
 
-def validateArguments(args):
-    session = getSession(args)
-    session.login()
-    
-    if "-exams" in args:
-        exams = getExams(args[5], session)
-        calendar = getExamCalendar(session, exams)
-    #createICSFile(calendar, "exams.ics")
-    else:
-        timetable = getTimetable(args[5], session)
-        calendar = getTimetableCalendar(session, timetable)
-        createICSFile(calendar, "webuntis-timetable.ics")
+def validateArguments(config):
 
-    session.logout()
 
 
 
 def main():
-    validateArguments(sys.argv)
+    config = readTOMLFile(sys.argv[1])
+    
+    session = getSession(config)
+    session.login()
+    
+    timetable = getTimetable(config.schoolclass, session)
+    calendar = getTimetableCalendar(session, timetable)
+    createICSFile(calendar, "webuntis-timetable.ics")
+    
+    session.logout()
 
 main()
