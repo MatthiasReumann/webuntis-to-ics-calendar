@@ -14,7 +14,7 @@ def getTimetable(session):
 
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday())
-    lastday = monday + datetime.timedelta(days=100) #take that year
+    lastday = monday + datetime.timedelta(weeks=38)
 
     schoolClass = session.klassen().filter(name=sys.argv[5])[0]; #issue: adds lessons that i dont have
 
@@ -25,7 +25,7 @@ def getCalendar(session):
 
     subjectList = []
 
-    calendar = Calendar() #create new calender (todo: add to existing one)
+    calendar = Calendar()
 
     timetable = getTimetable(session)
 
@@ -68,7 +68,12 @@ def createSession():
 
     session.logout()
 
+def validateArguments(args):
+    if "-hw" in args:
+        print("boy")
+
 def main():
+    validateArguments(sys.argv)
     createSession()
 
 main()
