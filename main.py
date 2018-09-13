@@ -117,11 +117,6 @@ def getSession(config):
     
     return session
 
-def validateArguments(config):
-
-
-
-
 def main():
     config = readTOMLFile(sys.argv[1])
     
