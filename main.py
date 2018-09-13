@@ -50,7 +50,7 @@ def createEvent(subject, start, end):
     return event
 
 def createICSFile(calendar):
-    with open('webuntis-calender.ics', 'w') as f:
+    with open('webuntis-timetable.ics', 'w') as f:
         f.writelines(calendar)
 
 def createSession():
