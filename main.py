@@ -20,14 +20,12 @@ def getTimetable(session):
 
     return session.timetable(klasse=schoolClass,start=monday, end=lastday); #get timetable of class 4CHIF
 
-def getCalendar(session):
+def getTimetableCalendar(session, timetable):
     """Return Calendar object with events from webuntis"""
 
     subjectList = []
 
     calendar = Calendar()
-
-    timetable = getTimetable(session)
 
     for i in range(len(timetable)):
         subject = timetable[i].subjects[0]
@@ -53,27 +51,42 @@ def createICSFile(calendar):
     with open('webuntis-timetable.ics', 'w') as f:
         f.writelines(calendar)
 
-def createSession():
+def getSession(args):
+    """Return Session object"""
+    
     session = wu.Session(
-        server = sys.argv[1],
-        username = sys.argv[2],
-        password = sys.argv[3],
-        school = sys.argv[4],
+        server = args[1],
+        username = args[2],
+        password = args[3],
+        school = args[4],
         useragent = 'webuntis-calender-sync'
     )
+    
+    return session
 
+#session.login()
+
+# createICSFile(getCalendar(session))
+
+#session.logout()
+
+def validateArguments(args):
+    session = getSession(args)
     session.login()
-
-    createICSFile(getCalendar(session))
+    
+    if "-hw" in args:
+    #calendar = getTimetableCalendar(session)
+        print("sopron")
+    else:
+        timetable = getTimetable(session)
+        calendar = getTimetableCalendar(timetable)
+        createICSFile(calendar)
 
     session.logout()
 
-def validateArguments(args):
-    if "-hw" in args:
-        print("boy")
+
 
 def main():
     validateArguments(sys.argv)
-    createSession()
 
 main()
