@@ -20,10 +20,10 @@ def getLastDay():
     
     return getFirstDay() + datetime.timedelta(weeks=38)
 
-def getTimetable(session):
+def getTimetable(args, session):
     """Return timetable object of webuntis api"""
 
-    schoolClass = session.klassen().filter(name=sys.argv[5])[0]; #issue: adds lessons that i dont have
+    schoolClass = session.klassen().filter(name=args[5])[0]; #issue: adds lessons that i dont have
 
     return session.timetable(klasse=schoolClass,start=getFirstDay(), end=getLastDay()); #get timetable of class 4CHIF
 
@@ -95,7 +95,7 @@ def validateArguments(args):
     #calendar = getTimetableCalendar(session)
         print("sopron")
     else:
-        timetable = getTimetable(session)
+        timetable = getTimetable(args, session)
         calendar = getTimetableCalendar(session, timetable)
         createICSFile(calendar)
 
