@@ -26,13 +26,14 @@ def getFirstDay():
     return today - datetime.timedelta(days=today.weekday())
 
 def getLastDay():
-    """Return last day of the current schoolyear"""
+    """Return last day of current schoolyear"""
     
     return getFirstDay() + datetime.timedelta(weeks=38)
 
 def getSchoolClass(schoolclass, session):
+    """Return schoolclass"""
+    
     return session.klassen().filter(name=schoolclass)[0]
-
 
 def getTimetable(schoolclass, session):
     """Return timetable object of webuntis api"""
@@ -41,8 +42,8 @@ def getTimetable(schoolclass, session):
 
 def getExams(schoolclass, session):
     """Return exams object of webuntis api"""
+    
     return session.exams(klasse=getSchoolClass(schoolclass,session), start=getFirstDay(), end=getLastDay())
-
 
 def getTimetableCalendar(session, timetable):
     """Return Calendar object with events(subjects) from webuntis"""
@@ -78,8 +79,6 @@ def getExamCalendar(session):
 
     return calendar
 
-
-
 def createEvent(subject, start, end):
     """Return Event object"""
 
@@ -95,6 +94,8 @@ def createICSFile(calendar, filename):
         f.writelines(calendar)
 
 def readTOMLFile(filename):
+    """Return Config object"""
+    
     toml_string = ""
     with open(filename, 'r') as f:
         toml_string = toml_string + f.read()
