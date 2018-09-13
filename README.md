@@ -1,7 +1,7 @@
 # webuntis-calendar-sync
 Create .ics file from webuntis timetable
 
-## Config File
+## Config file
 
 Configuration file [(.toml)](https://github.com/toml-lang/toml) syntax
 
