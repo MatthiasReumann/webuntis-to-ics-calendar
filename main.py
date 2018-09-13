@@ -20,19 +20,22 @@ def getLastDay():
     
     return getFirstDay() + datetime.timedelta(weeks=38)
 
-def getTimetable(args, session):
+def getSchoolClass(schoolclass, session):
+    return session.klassen().filter(name=schoolclass)[0]
+
+
+def getTimetable(schoolclass, session):
     """Return timetable object of webuntis api"""
+    
+    return session.timetable(klasse=getSchoolClass(schoolclass, session), start=getFirstDay(), end=getLastDay());
 
-    schoolClass = session.klassen().filter(name=args[5])[0]; #issue: adds lessons that i dont have
-
-    return session.timetable(klasse=schoolClass,start=getFirstDay(), end=getLastDay()); #get timetable of class 4CHIF
-
-def getExams(session):
-    print("test")
+def getExams(schoolclass, session):
+    """Return exams object of webuntis api"""
+    return session.exams(klasse=getSchoolClass(schoolclass,session), start=getFirstDay(), end=getLastDay())
 
 
 def getTimetableCalendar(session, timetable):
-    """Return Calendar object with events from webuntis"""
+    """Return Calendar object with events(subjects) from webuntis"""
 
     subjectList = []
 
@@ -49,8 +52,21 @@ def getTimetableCalendar(session, timetable):
     return calendar
 
 def getExamCalendar(session):
+    """Return Calendar object with events(exams) from webuntis"""
     
     examList = []
+    
+    calendar = Calendar()
+    
+    for i in range(len(timetable)):
+        subject = timetable[i].subjects[0]
+        start = timetable[i].start
+        end = timetable[i].end
+    
+        event = createEvent(subject, start, end)
+        calendar.events.add(event)
+
+    return calendar
 
 
 
@@ -64,8 +80,8 @@ def createEvent(subject, start, end):
 
     return event
 
-def createICSFile(calendar):
-    with open('webuntis-timetable.ics', 'w') as f:
+def createICSFile(calendar, filename):
+    with open(filename, 'w') as f:
         f.writelines(calendar)
 
 def getSession(args):
@@ -81,23 +97,18 @@ def getSession(args):
     
     return session
 
-#session.login()
-
-# createICSFile(getCalendar(session))
-
-#session.logout()
-
 def validateArguments(args):
     session = getSession(args)
     session.login()
     
     if "-exams" in args:
-    #calendar = getTimetableCalendar(session)
-        print("sopron")
+        exams = getExams(args[5], session)
+        calendar = getExamCalendar(session, exams)
+    #createICSFile(calendar, "exams.ics")
     else:
-        timetable = getTimetable(args, session)
+        timetable = getTimetable(args[5], session)
         calendar = getTimetableCalendar(session, timetable)
-        createICSFile(calendar)
+        createICSFile(calendar, "webuntis-timetable.ics")
 
     session.logout()
 
