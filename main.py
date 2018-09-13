@@ -9,16 +9,27 @@ class Subject:
         self.start = start
         self.end = end
 
+def getFirstDay():
+    """Return current monday"""
+    
+    today = datetime.date.today()
+    return today - datetime.timedelta(days=today.weekday())
+
+def getLastDay():
+    """Return last day of the current schoolyear"""
+    
+    return getFirstDay() + datetime.timedelta(weeks=38)
+
 def getTimetable(session):
     """Return timetable object of webuntis api"""
 
-    today = datetime.date.today()
-    monday = today - datetime.timedelta(days=today.weekday())
-    lastday = monday + datetime.timedelta(weeks=38)
-
     schoolClass = session.klassen().filter(name=sys.argv[5])[0]; #issue: adds lessons that i dont have
 
-    return session.timetable(klasse=schoolClass,start=monday, end=lastday); #get timetable of class 4CHIF
+    return session.timetable(klasse=schoolClass,start=getFirstDay(), end=getLastDay()); #get timetable of class 4CHIF
+
+def getExams(session):
+    print("test")
+
 
 def getTimetableCalendar(session, timetable):
     """Return Calendar object with events from webuntis"""
@@ -36,6 +47,12 @@ def getTimetableCalendar(session, timetable):
         calendar.events.add(event)
 
     return calendar
+
+def getExamCalendar(session):
+    
+    examList = []
+
+
 
 def createEvent(subject, start, end):
     """Return Event object"""
@@ -74,12 +91,12 @@ def validateArguments(args):
     session = getSession(args)
     session.login()
     
-    if "-hw" in args:
+    if "-exams" in args:
     #calendar = getTimetableCalendar(session)
         print("sopron")
     else:
         timetable = getTimetable(session)
-        calendar = getTimetableCalendar(timetable)
+        calendar = getTimetableCalendar(session, timetable)
         createICSFile(calendar)
 
     session.logout()
