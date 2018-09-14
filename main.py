@@ -19,16 +19,19 @@ class Config:
         self.school = school
 
 
-def getFirstDay():
+def getFirstDay(schoolyear):
     """Return current monday"""
     
-    today = datetime.date.today()
-    return today - datetime.timedelta(days=today.weekday())
+    return schoolyear.start
 
-def getLastDay():
+def getLastDay(schoolyear):
     """Return last day of current schoolyear"""
     
-    return getFirstDay() + datetime.timedelta(weeks=38)
+    return schoolyear.end
+
+def getCurrentSchoolyear(session):
+    year = session.schoolyears()
+    return year.filter(id=year.current.id)[0]
 
 def getSchoolClass(schoolclass, session):
     """Return schoolclass"""
@@ -37,43 +40,25 @@ def getSchoolClass(schoolclass, session):
 
 def getTimetable(schoolclass, session):
     """Return timetable object of webuntis api"""
+    schoolyear = getCurrentSchoolyear(session)
     
-    return session.timetable(klasse=getSchoolClass(schoolclass, session), start=getFirstDay(), end=getLastDay());
+    return session.timetable(klasse=getSchoolClass(schoolclass, session), start=getFirstDay(schoolyear), end=getLastDay(schoolyear));
 
 def getExams(schoolclass, session):
     """Return exams object of webuntis api"""
     
-    return session.exams(klasse=getSchoolClass(schoolclass,session), start=getFirstDay(), end=getLastDay())
+    return session.exams(klasse=getSchoolClass(schoolclass,session), start=getFirstDay(schoolyear), end=getLastDay(schoolyear))
 
 def getTimetableCalendar(session, timetable):
     """Return Calendar object with events(subjects) from webuntis"""
 
-    subjectList = []
-
     calendar = Calendar()
-
+   
     for i in range(len(timetable)):
-        subject = timetable[i].subjects[0]
+        subject = timetable[i].subjects
         start = timetable[i].start
         end = timetable[i].end
 
-        event = createEvent(subject, start, end)
-        calendar.events.add(event)
-
-    return calendar
-
-def getExamCalendar(session):
-    """Return Calendar object with events(exams) from webuntis"""
-    
-    examList = []
-    
-    calendar = Calendar()
-    
-    for i in range(len(timetable)):
-        subject = timetable[i].subjects[0]
-        start = timetable[i].start
-        end = timetable[i].end
-    
         event = createEvent(subject, start, end)
         calendar.events.add(event)
 
@@ -127,6 +112,7 @@ def main():
     timetable = getTimetable(config.schoolclass, session)
     calendar = getTimetableCalendar(session, timetable)
     createICSFile(calendar, "webuntis-timetable.ics")
+   
     
     session.logout()
 
