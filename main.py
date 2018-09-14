@@ -58,9 +58,10 @@ def getTimetableCalendar(session, timetable):
         subject = timetable[i].subjects
         start = timetable[i].start
         end = timetable[i].end
-
-        event = createEvent(subject, start, end)
-        calendar.events.add(event)
+        
+        if len(subject) > 0:
+            event = createEvent(subject[0], start, end)
+            calendar.events.add(event)
 
     return calendar
 
@@ -112,8 +113,7 @@ def main():
     timetable = getTimetable(config.schoolclass, session)
     calendar = getTimetableCalendar(session, timetable)
     createICSFile(calendar, "webuntis-timetable.ics")
-   
-    
+           
     session.logout()
 
 main()
