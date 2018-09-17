@@ -3,12 +3,8 @@ import webuntis as wu
 import datetime
 import sys
 import toml
-
-class Subject:
-    def __init__(self, name, start, end):
-        self.name = name
-        self.start = start
-        self.end = end
+import requests
+import json
 
 class Config:
     def __init__(self, server, username, password, schoolclass, school):
@@ -33,23 +29,24 @@ def getCurrentSchoolyear(session):
     year = session.schoolyears()
     return year.filter(id=year.current.id)[0]
 
-def getSchoolClass(schoolclass, session):
-    """Return schoolclass"""
+def getStudentId(id):
+    session = requests.Session()
     
-    return session.klassen().filter(name=schoolclass)[0]
+    req = session.get('https://nete.webuntis.com/WebUntis/api/public/timetable/weekly/pageconfig?type=5',
+                cookies = {'JSESSIONID': id})
+    
+    req_json = json.loads(req.text)
+    
+    return req_json['data']['elements'][0]['id']
 
-def getTimetable(schoolclass, session):
+
+
+def getTimetable(student, schoolyear, session):
     """Return timetable object of webuntis api"""
-    schoolyear = getCurrentSchoolyear(session)
     
-    return session.timetable(klasse=getSchoolClass(schoolclass, session), start=getFirstDay(schoolyear), end=getLastDay(schoolyear));
+    return session.timetable(student=student, start=getFirstDay(schoolyear), end=getLastDay(schoolyear));
 
-def getExams(schoolclass, session):
-    """Return exams object of webuntis api"""
-    
-    return session.exams(klasse=getSchoolClass(schoolclass,session), start=getFirstDay(schoolyear), end=getLastDay(schoolyear))
-
-def getTimetableCalendar(session, timetable):
+def getCalendar(session, timetable):
     """Return Calendar object with events(subjects) from webuntis"""
 
     calendar = Calendar()
@@ -88,6 +85,7 @@ def readTOMLFile(filename):
 
     parsed_toml = toml.loads(toml_string)
     user = parsed_toml["user"]
+
     return Config(user["server"],user["username"],user["password"],
                   user["class"],user["school"])
 
@@ -99,7 +97,7 @@ def getSession(config):
         username = config.username,
         password = config.password,
         school = config.school,
-        useragent = 'webuntis-calender-sync'
+        useragent = 'webuntis-ics-calendar'
     )
     
     return session
@@ -110,8 +108,11 @@ def main():
     session = getSession(config)
     session.login()
     
-    timetable = getTimetable(config.schoolclass, session)
-    calendar = getTimetableCalendar(session, timetable)
+    schoolyear = getCurrentSchoolyear(session)
+    student = getStudentId(session.config['jsessionid'])
+    
+    timetable = getTimetable(student, schoolyear, session)
+    calendar = getCalendar(session, timetable)
     createICSFile(calendar, "webuntis-timetable.ics")
            
     session.logout()
