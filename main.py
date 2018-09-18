@@ -29,10 +29,10 @@ def getCurrentSchoolyear(session):
     year = session.schoolyears()
     return year.filter(id=year.current.id)[0]
 
-def getStudentId(id):
+def getStudentId(id, config):
     session = requests.Session()
     
-    req = session.get('https://nete.webuntis.com/WebUntis/api/public/timetable/weekly/pageconfig?type=5',
+    req = session.get('https://{}/WebUntis/api/public/timetable/weekly/pageconfig?type=5'.format(config.server),
                 cookies = {'JSESSIONID': id})
     
     req_json = json.loads(req.text)
@@ -109,7 +109,7 @@ def main():
     session.login()
     
     schoolyear = getCurrentSchoolyear(session)
-    student = getStudentId(session.config['jsessionid'])
+    student = getStudentId(session.config['jsessionid'], config)
     
     timetable = getTimetable(student, schoolyear, session)
     calendar = getCalendar(session, timetable)
